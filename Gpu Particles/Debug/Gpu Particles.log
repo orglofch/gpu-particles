@@ -1,0 +1,16 @@
+﻿Build started 10/28/2014 9:09:11 PM.
+     1>Project "C:\Users\owen\documents\visual studio 2013\Projects\Gpu Particles\Gpu Particles\Gpu Particles.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /I"C:\lib\glew-1.11.0\include" /IC:\lib\freeglut\include /ZI /nologo /W3 /WX- /sdl /Od /Oy- /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
+         main.cpp
+     1>c:\users\owen\documents\visual studio 2013\projects\gpu particles\gpu particles\main.cpp(35): warning C4244: 'initializing' : conversion from 'double' to 'size_t', possible loss of data
+     1>c:\users\owen\documents\visual studio 2013\projects\gpu particles\gpu particles\main.cpp(257): warning C4244: '=' : conversion from 'double' to 'GLubyte', possible loss of data
+     1>c:\users\owen\documents\visual studio 2013\projects\gpu particles\gpu particles\main.cpp(275): warning C4244: '=' : conversion from 'float' to 'GLubyte', possible loss of data
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\owen\documents\visual studio 2013\Projects\Gpu Particles\Debug\Gpu Particles.exe" /INCREMENTAL /NOLOGO /LIBPATH:C:\lib\freeglut\lib /LIBPATH:"C:\lib\glew-1.11.0\lib\Release\Win32" opengl32.lib glew32.lib glu32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\owen\documents\visual studio 2013\Projects\Gpu Particles\Debug\Gpu Particles.pdb" /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\owen\documents\visual studio 2013\Projects\Gpu Particles\Debug\Gpu Particles.lib" /MACHINE:X86 Debug\main.obj
+         Gpu Particles.vcxproj -> C:\Users\owen\documents\visual studio 2013\Projects\Gpu Particles\Debug\Gpu Particles.exe
+     1>Done Building Project "C:\Users\owen\documents\visual studio 2013\Projects\Gpu Particles\Gpu Particles\Gpu Particles.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:00.92

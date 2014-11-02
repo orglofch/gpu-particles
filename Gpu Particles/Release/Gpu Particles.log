@@ -1,0 +1,17 @@
+﻿Build started 11/1/2014 8:46:01 PM.
+     1>Project "C:\Users\owen\documents\visual studio 2013\Projects\Gpu Particles\Gpu Particles\Gpu Particles.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /IC:\lib\freeglut\include /I"C:\lib\glew-1.11.0\include" /Zi /nologo /W3 /WX- /sdl /O2 /Oi /Oy- /GL /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
+         main.cpp
+     1>main.cpp(35): warning C4244: 'initializing' : conversion from 'double' to 'size_t', possible loss of data
+     1>main.cpp(74): warning C4244: 'initializing' : conversion from 'double' to 'size_t', possible loss of data
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\owen\documents\visual studio 2013\Projects\Gpu Particles\Release\Gpu Particles.exe" /NOLOGO /LIBPATH:"C:\lib\glew-1.11.0\lib\Release\Win32" /LIBPATH:C:\lib\freeglut\lib opengl32.lib glew32.lib glu32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\owen\documents\visual studio 2013\Projects\Gpu Particles\Release\Gpu Particles.pdb" /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\owen\documents\visual studio 2013\Projects\Gpu Particles\Release\Gpu Particles.lib" /MACHINE:X86 /SAFESEH Release\main.obj
+         Generating code
+         Finished generating code
+         Gpu Particles.vcxproj -> C:\Users\owen\documents\visual studio 2013\Projects\Gpu Particles\Release\Gpu Particles.exe
+     1>Done Building Project "C:\Users\owen\documents\visual studio 2013\Projects\Gpu Particles\Gpu Particles\Gpu Particles.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.15
