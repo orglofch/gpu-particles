@@ -76,6 +76,8 @@
     <ClInclude Include="GLUtil.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="noise.frag" />
+    <None Include="noise.vert" />
     <None Include="update.frag" />
     <None Include="render.frag" />
     <None Include="render.vert" />

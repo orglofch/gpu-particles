@@ -11,6 +11,7 @@ void main()
 	if (linehead == 0.0) {
 		gl_Position += vec4(velocity / 8, 0.0);
 	}
+	gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Position;
 
 	gl_TexCoord[0].st = aIndex;
 }
