@@ -37,5 +37,11 @@
     <None Include="update.frag">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="noise.frag">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="noise.vert">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
