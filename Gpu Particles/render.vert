@@ -8,7 +8,7 @@ void main()
 {
 	gl_Position = texture2D(uPositions, aIndex);
 	vec3 velocity = texture2D(uVelocities, aIndex).xyz;
-	if (linehead == 0) {
+	if (linehead == 0.0) {
 		gl_Position += vec4(velocity / 8, 0.0);
 	}
 

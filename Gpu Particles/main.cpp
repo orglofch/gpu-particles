@@ -31,7 +31,7 @@
 
 #include "GLUtil.hpp"
 
-size_t kNumParticles = 900 * 900;
+size_t kNumParticles = 500 * 500;
 size_t kTexWidth = sqrt(kNumParticles);
 size_t kTexHeight = kTexWidth;
 
