@@ -1,16 +1,11 @@
-<<<<<<< HEAD
-﻿Build started 12/29/2014 3:35:41 PM.
+﻿Build started 12/30/2014 12:16:06 AM.
      1>Project "C:\Users\Tilt\Projects\GPU-Particles\Gpu Particles\Gpu Particles.vcxproj" on node 2 (Build target(s)).
-=======
-﻿Build started 12/25/2014 8:49:23 AM.
-     1>Project "C:\Users\owen\documents\visual studio 2013\Projects\Gpu Particles\Gpu Particles\Gpu Particles.vcxproj" on node 2 (Build target(s)).
->>>>>>> 8220ca3bf71b781117ef5750570447ce40fc4432
      1>ClCompile:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\CL.exe /c /IC:\lib\freeglut\include /I"C:\lib\glew-1.11.0\include" /Zi /nologo /W3 /WX- /sdl /O2 /Oi /Oy- /GL /D _MBCS /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc120.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
          main.cpp
      1>main.cpp(36): warning C4244: 'initializing' : conversion from 'double' to 'size_t', possible loss of data
-     1>main.cpp(91): warning C4244: 'initializing' : conversion from 'double' to 'size_t', possible loss of data
-     1>main.cpp(447): warning C4018: '<' : signed/unsigned mismatch
+     1>main.cpp(87): warning C4244: 'initializing' : conversion from 'double' to 'size_t', possible loss of data
+     1>main.cpp(440): warning C4018: '<' : signed/unsigned mismatch
        Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Tilt\Projects\GPU-Particles\Release\Gpu Particles.exe" /NOLOGO /LIBPATH:"C:\lib\glew-1.11.0\lib\Release\Win32" /LIBPATH:C:\lib\freeglut\lib opengl32.lib glew32.lib glu32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Tilt\Projects\GPU-Particles\Release\Gpu Particles.pdb" /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Tilt\Projects\GPU-Particles\Release\Gpu Particles.lib" /MACHINE:X86 /SAFESEH Release\main.obj
          Generating code
@@ -20,8 +15,4 @@
 
 Build succeeded.
 
-<<<<<<< HEAD
-Time Elapsed 00:00:00.79
-=======
-Time Elapsed 00:00:02.16
->>>>>>> 8220ca3bf71b781117ef5750570447ce40fc4432
+Time Elapsed 00:00:00.84

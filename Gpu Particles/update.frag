@@ -15,10 +15,10 @@ void main()
 	gl_FragData[0] = position + vec4(velocity, 0.0);
 	gl_FragData[1] = vec4(velocity, 0.0);
 
-	if (uMouseDown == 1.0) {
-		vec3 vecToMouse = position.xyz - vec3(uMousePosition, 1.0);
+	if (uMouseDown > 0.5) {
+		vec3 vecToMouse = position.xyz - vec3(uMousePosition, 0.0);
 		float vecToMouseDistance = length(vecToMouse);
 		vec3 normVecToMouse = normalize(vecToMouse);
-		gl_FragData[1].xyz -= normVecToMouse * min(0.008, 1.0 / (vecToMouseDistance * vecToMouseDistance * vecToMouseDistance) / 600);
+		gl_FragData[1].xyz -= normVecToMouse * min(0.008, 1.0 / (vecToMouseDistance * vecToMouseDistance * vecToMouseDistance) / 500);
 	} 
 }

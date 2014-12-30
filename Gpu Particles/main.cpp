@@ -32,7 +32,7 @@
 #include "GLUtil.hpp"
 
 // Simulation state
-size_t kNumParticles = 800 * 800;
+size_t kNumParticles = 3500 * 3500;
 size_t kTexWidth = sqrt(kNumParticles);
 size_t kTexHeight = kTexWidth;
 bool kPaused = false;
@@ -62,10 +62,6 @@ GLint kPositionUniformLocationRender = -1;
 GLint kVelocityUniformLocationRender = -1;
 
 GLint kPermUniformLocationNoise = -1;
-
-// Attributes
-GLint kIndexAttributeLocationUpdate = -1;
-GLint kIndexAttributeLocationRender = -1;
 
 // Textures
 GLuint kTexturePosition[2] = { 0, 0 };
@@ -185,9 +181,6 @@ void Render(void)
 	GL_CHECK(glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, (char *)2));
 
 	glDrawArrays(GL_LINES, 0, kNumParticles);
-
-	//glUseProgram(0);
-	//DrawTexturedQuad(kNoiseTexture);
 
 	glutSwapBuffers();
 	glutPostRedisplay();
@@ -314,14 +307,12 @@ void Init(void)
 	kVelocityUniformLocationUpdate = glGetUniformLocation(kUpdateShaderProgram, "uVelocities");
 	kMousePositionUniformLocationUpdate = glGetUniformLocation(kUpdateShaderProgram, "uMousePosition");
 	kMouseDownUniformLocationUpdate = glGetUniformLocation(kUpdateShaderProgram, "uMouseDown");
-	kIndexAttributeLocationUpdate = glGetAttribLocation(kUpdateShaderProgram, "aIndex");
 
 	LoadShader("render.vert", "render.frag", 
 		kRenderShaderProgram, kRenderVertexShader, kRenderFragmentShader);
 
 	kPositionUniformLocationRender = glGetUniformLocation(kRenderShaderProgram, "uPositions");
 	kVelocityUniformLocationRender = glGetUniformLocation(kRenderShaderProgram, "uVelocities");
-	kIndexAttributeLocationRender = glGetAttribLocation(kRenderShaderProgram, "aIndex");
 
 	LoadShader("noise.vert", "noise.frag",
 		kNoiseShaderProgram, kNoiseVertexShader, kNoiseFragmentShader);
@@ -409,10 +400,12 @@ void GenerateParticles(void)
 	for (size_t x = 0; x < kTexWidth; ++x) {
 		for (size_t y = 0; y < kTexHeight; ++y) {
 			size_t i = (y * kTexWidth + x) * 6;
-			attributeData[i + 0] = attributeData[i + 3] = 1.0f * (x + 0.5f) / kTexWidth; // s
-			attributeData[i + 1] = attributeData[i + 4] = 1.0f * (y + 0.5f) / kTexHeight; // t
+			attributeData[i + 0] = 1.0f * (x + 0.5f) / kTexWidth; // s
+			attributeData[i + 1] = 1.0f * (y + 0.5f) / kTexHeight; // t
 			attributeData[i + 2] = 1.0f; // head of line
 			attributeData[i + 5] = 0.0f; // not head of line
+			attributeData[i + 3] = 1.0f * (x + 0.5f) / kTexWidth; // s
+			attributeData[i + 4] = 1.0f * (y + 0.5f) / kTexHeight; // t
 		}
 	}
 
@@ -480,7 +473,7 @@ int main(int argc, char **argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(100, 100);
-	glutInitWindowSize(1200, 800);
+	glutInitWindowSize(1280, 720);
 	kMainWindow = glutCreateWindow("GPU Particles");
 	glewInit();
 
