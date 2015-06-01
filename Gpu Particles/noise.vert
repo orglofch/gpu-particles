@@ -1,4 +1,9 @@
+attribute vec2 aIndex;
+
 void main()
 {
-  gl_Position = vec4(gl_TexCoord[0].st, 0, 1);  
+	gl_Position.xy = aIndex * 2.0 - vec2(1.0, 1.0);
+	gl_Position.zw = vec2(0.0, 1.0);
+
+	gl_TexCoord[0].st = aIndex;
 }

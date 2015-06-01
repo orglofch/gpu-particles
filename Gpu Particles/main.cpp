@@ -31,9 +31,21 @@
 
 #include "GLUtil.hpp"
 
+using namespace std;
+
+enum Mode
+{
+	MODE_NORMAL,
+	MODE_FIRE,
+
+	MODE_COUNT,
+};
+
 // Simulation state
-size_t kNumParticles = 3500 * 3500;
-size_t kTexWidth = sqrt(kNumParticles);
+Mode kMode = MODE_NORMAL;
+
+size_t kNumParticles = 1900 * 1900;
+size_t kTexWidth = (size_t)sqrt(kNumParticles);
 size_t kTexHeight = kTexWidth;
 bool kPaused = false;
 float kRotationY = 0.0f;
@@ -55,19 +67,19 @@ GLuint kNoiseFragmentShader = 0;
 // Uniforms
 GLint kPositionUniformLocationUpdate = -1;
 GLint kVelocityUniformLocationUpdate = -1;
+GLint kCurlNoiseUniformLocationUpdate = -1;
 GLint kMousePositionUniformLocationUpdate = -1;
 GLint kMouseDownUniformLocationUpdate = -1;
+GLint kTimeUniformLocationUpdate = -1;
+GLint kModeUniformLocationUpdate = -1;
 
 GLint kPositionUniformLocationRender = -1;
 GLint kVelocityUniformLocationRender = -1;
 
-GLint kPermUniformLocationNoise = -1;
-
 // Textures
 GLuint kTexturePosition[2] = { 0, 0 };
 GLuint kTextureVelocity[2] = { 0, 0 };
-GLuint kPermTexture = 0;
-GLuint kNoiseTexture = 0;
+GLuint kTextureCurlNoise = 0;
 int kFrontTexture = 0;
 
 // Buffers
@@ -82,33 +94,11 @@ bool kRotateLeft = false;
 bool kRotateRight = false;
 bool kZoomIn = false;
 bool kZoomOut = false;
+int kTime = 0;
 
 // Window state
-size_t kWindowSize[2] = { 0.0, 0.0 };
+size_t kWindowSize[2] = { 0, 0 };
 int kMainWindow = 0;
-
-int perm[256] = { 
-	151, 160, 137, 91, 90, 15, 131, 13, 201, 95, 96, 53, 194, 233, 7, 225, 140, 36, 
-	103, 30, 69, 142, 8, 99, 37, 240, 21, 10, 23, 190, 6, 148, 247, 120, 234, 75, 0, 
-	26, 197, 62, 94, 252, 219, 203, 117, 35, 11, 32, 57, 177, 33, 88, 237, 149, 56, 
-	87, 174, 20, 125, 136, 171, 168, 68, 175, 74, 165, 71, 134, 139, 48, 27, 166, 77, 
-	146, 158, 231, 83, 111, 229, 122, 60, 211, 133, 230, 220, 105, 92, 41, 55, 46, 245, 40, 244,
-	102, 143, 54, 65, 25, 63, 161, 1, 216, 80, 73, 209, 76, 132, 187, 208, 89, 18, 169, 200, 196,
-	135, 130, 116, 188, 159, 86, 164, 100, 109, 198, 173, 186, 3, 64, 52, 217, 226, 250, 124, 123,
-	5, 202, 38, 147, 118, 126, 255, 82, 85, 212, 207, 206, 59, 227, 47, 16, 58, 17, 182, 189, 28, 42,
-	223, 183, 170, 213, 119, 248, 152, 2, 44, 154, 163, 70, 221, 153, 101, 155, 167, 43, 172, 9,
-	129, 22, 39, 253, 19, 98, 108, 110, 79, 113, 224, 232, 178, 185, 112, 104, 218, 246, 97, 228,
-	251, 34, 242, 193, 238, 210, 144, 12, 191, 179, 162, 241, 81, 51, 145, 235, 249, 14, 239, 107,
-	49, 192, 214, 31, 181, 199, 106, 157, 184, 84, 204, 176, 115, 121, 50, 45, 127, 4, 150, 254,
-	138, 236, 205, 93, 222, 114, 67, 29, 24, 72, 243, 141, 128, 195, 78, 66, 215, 61, 156, 180 
-};
-
-int grad3[16][3] = { 
-	{ 0, 1, 1 }, { 0, 1, -1 }, { 0, -1, 1 }, { 0, -1, -1 },
-	{ 1, 0, 1 }, { 1, 0, -1 }, { -1, 0, 1 }, { -1, 0, -1 },
-	{ 1, 1, 0 }, { 1, -1, 0 }, { -1, 1, 0 }, { -1, -1, 0 }, 
-	{ 1, 0, -1 }, { -1, 0, -1 }, { 0, -1, 1 }, { 0, 1, 1 } 
-};
 
 void Resize(int width, int height)
 {
@@ -119,7 +109,7 @@ void Resize(int width, int height)
 
 void Update(void)
 {
-	glUseProgram(kUpdateShaderProgram);
+	glEnable(GL_TEXTURE_2D);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, kFBO[!kFrontTexture]);
 	GLenum buffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
@@ -127,18 +117,30 @@ void Update(void)
 	glViewport(0, 0, kTexWidth, kTexHeight);
 	glDisable(GL_BLEND);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, kTexturePosition[kFrontTexture]);
-	glUniform1i(kPositionUniformLocationUpdate, 0);
 	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, kTexturePosition[kFrontTexture]);
+	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, kTextureVelocity[kFrontTexture]);
-	glUniform1i(kVelocityUniformLocationUpdate, 1);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, kTextureCurlNoise);
+
+	glUseProgram(kUpdateShaderProgram);
 
 	glUniform2fv(kMousePositionUniformLocationUpdate, 1, kMouse);
 	glUniform1f(kMouseDownUniformLocationUpdate, kLeftMouseDown);
+	glUniform1f(kTimeUniformLocationUpdate, kTime++);
+	glUniform1f(kModeUniformLocationUpdate, kMode);
 
-	DrawTexturedQuad(kTextureVelocity[kFrontTexture]);
+	// TODO(orglofch): This rebinds the active texture
+	DrawTexturedQuad(kTextureCurlNoise);
 
+	glUseProgram(0);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glActiveTexture(GL_TEXTURE3);
+	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -165,14 +167,13 @@ void Render(void)
 	glTranslatef(0.0, 0.0, kTranslationZ);
 	glRotatef(kRotationY, 0.0f, 1.0f, 0.0f);
 
-	glUseProgram(kRenderShaderProgram);
+	glUseProgram(0);
+	//DrawTexturedQuad(kTextureCurlNoise);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, kTexturePosition[!kFrontTexture]);
-	glUniform1i(kPositionUniformLocationRender, 0);
 	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, kTexturePosition[!kFrontTexture]);
+	glActiveTexture(GL_TEXTURE2);
 	glBindTexture(GL_TEXTURE_2D, kTextureVelocity[!kFrontTexture]);
-	glUniform1i(kVelocityUniformLocationRender, 1);
 
 	glBindBuffer(GL_ARRAY_BUFFER, kAttributeBuffer);
 	glEnableVertexAttribArray(0);
@@ -180,7 +181,17 @@ void Render(void)
 	glEnableVertexAttribArray(1);
 	GL_CHECK(glVertexAttribPointer(1, 1, GL_FLOAT, GL_FALSE, 0, (char *)2));
 
+	glUseProgram(kRenderShaderProgram);
+
 	glDrawArrays(GL_LINES, 0, kNumParticles);
+
+	glUseProgram(0);
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glActiveTexture(GL_TEXTURE2);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	glutSwapBuffers();
 	glutPostRedisplay();
@@ -265,6 +276,10 @@ void HandleReleaseNormalKeys(unsigned char key, int x, int y)
 		case 'S':
 			kZoomOut = false;
 			break;
+		case 'm':
+		case 'M':
+			kMode = (Mode)((kMode + 1) % MODE_COUNT);
+			break;
 	}
 }
 
@@ -290,10 +305,7 @@ void HandleReleaseSpecialKey(int key, int x, int y)
 
 void Init(void) 
 {
-	glBlendFunc(GL_ONE, GL_ONE);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_TEXTURE_2D);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glDisable(GL_NORMALIZE);
 
 	glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -301,23 +313,36 @@ void Init(void)
 
 	SetPerspectiveProjection(60, kWindowSize[0], kWindowSize[1], 0.1, 1000.0);
 
+	// Update shader
 	LoadShader("update.vert", "update.frag",
 		kUpdateShaderProgram, kUpdateVertexShader, kUpdateFragmentShader);
 	kPositionUniformLocationUpdate = glGetUniformLocation(kUpdateShaderProgram, "uPositions");
 	kVelocityUniformLocationUpdate = glGetUniformLocation(kUpdateShaderProgram, "uVelocities");
+	kCurlNoiseUniformLocationUpdate = glGetUniformLocation(kUpdateShaderProgram, "uCurlNoise");
 	kMousePositionUniformLocationUpdate = glGetUniformLocation(kUpdateShaderProgram, "uMousePosition");
 	kMouseDownUniformLocationUpdate = glGetUniformLocation(kUpdateShaderProgram, "uMouseDown");
+	kTimeUniformLocationUpdate = glGetUniformLocation(kUpdateShaderProgram, "uTime");
+	kModeUniformLocationUpdate = glGetUniformLocation(kUpdateShaderProgram, "uMode");
 
+	glUseProgram(kUpdateShaderProgram);
+	glUniform1i(kPositionUniformLocationUpdate, 1);
+	glUniform1i(kVelocityUniformLocationUpdate, 2);
+	glUniform1i(kCurlNoiseUniformLocationUpdate, 3);
+
+	// Render shader
 	LoadShader("render.vert", "render.frag", 
 		kRenderShaderProgram, kRenderVertexShader, kRenderFragmentShader);
 
 	kPositionUniformLocationRender = glGetUniformLocation(kRenderShaderProgram, "uPositions");
 	kVelocityUniformLocationRender = glGetUniformLocation(kRenderShaderProgram, "uVelocities");
 
+	glUseProgram(kRenderShaderProgram);
+	glUniform1i(kPositionUniformLocationRender, 1);
+	glUniform1i(kVelocityUniformLocationRender, 2);
+
+	// Noise shader
 	LoadShader("noise.vert", "noise.frag",
 		kNoiseShaderProgram, kNoiseVertexShader, kNoiseFragmentShader);
-
-	kPermUniformLocationNoise = glGetUniformLocation(kNoiseShaderProgram, "uPermTexture");
 
 	glutDisplayFunc(Render);
 	glutReshapeFunc(Resize);
@@ -325,6 +350,7 @@ void Init(void)
 	glutIgnoreKeyRepeat(1);
 	glutMouseFunc(HandleMouseButton);
 	glutMotionFunc(HandleMouseMove);
+	glutPassiveMotionFunc(HandleMouseMove);
 	glutKeyboardFunc(HandlePressNormalKeys);
 	glutKeyboardUpFunc(HandleReleaseNormalKeys);
 	glutSpecialFunc(HandlePressSpecialKey);
@@ -333,6 +359,18 @@ void Init(void)
 
 void GenerateNoise(void)
 {
+	GLfloat *noiseData = new GLfloat[kTexWidth * kTexHeight * 4];
+	for (size_t i = 0; i < kTexWidth * kTexHeight * 4; ++i) {
+		noiseData[i] = 0.0f;
+	}
+	CreateTexture2D(&kTextureCurlNoise, kTexWidth, kTexHeight, noiseData);
+	delete[] noiseData;
+
+	glGenFramebuffers(1, &kNoiseFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, kNoiseFBO);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+		GL_TEXTURE_2D, kTextureCurlNoise, 0);
+
 	glUseProgram(kNoiseShaderProgram);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, kNoiseFBO);
@@ -341,12 +379,9 @@ void GenerateNoise(void)
 	glViewport(0, 0, kTexWidth, kTexHeight);
 	glDisable(GL_BLEND);
 
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, kPermTexture);
-	glUniform1i(kPermUniformLocationNoise, 0);
+	DrawTexturedQuad(kTextureCurlNoise);
 
-	DrawTexturedQuad(kPermTexture);
-
+	glBindTexture(GL_TEXTURE_2D, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
@@ -354,23 +389,19 @@ void GenerateParticles(void)
 {
 	GLfloat *pData = new GLfloat[kTexWidth * kTexHeight * 4];
 	GLfloat *vData = new GLfloat[kTexWidth * kTexHeight * 4];
-	for (size_t x = 0; x < kTexWidth; ++x) {
-		for (size_t y = 0; y < kTexHeight; ++y) {
-			size_t i = (y * kTexWidth + x) * 4;
+	for (size_t i = 0; i < kTexWidth * kTexHeight * 4; i += 4) {
+		pData[i + 0] = 1.0f * rand() / RAND_MAX - 0.5f;
+		pData[i + 1] = 1.0f * rand() / RAND_MAX - 0.5f;
+		pData[i + 2] = 1.0f * rand() / RAND_MAX - 0.5f;
+		pData[i + 3] = 1.0f;
 
-			pData[i + 0] = 1.0f * rand() / RAND_MAX * 2.0f - 1.0f;
-			pData[i + 1] = 1.0f * rand() / RAND_MAX * 2.0f - 1.0f;
-			pData[i + 2] = 1.0f * rand() / RAND_MAX * 2.0f - 1.0f;
-			pData[i + 3] = 1.0f;
-
-			vData[i + 0] = 0.0f;
-			vData[i + 1] = 0.0f;
-			vData[i + 2] = 0.0f;
-			vData[i + 3] = 0.0f;
-		}
+		vData[i + 0] = 0.0f;
+		vData[i + 1] = 0.0f;
+		vData[i + 2] = 0.0f;
+		vData[i + 3] = 0.0f;
 	}
-	CreateTexture(&kTexturePosition[0], kTexWidth, kTexHeight, pData);
-	CreateTexture(&kTextureVelocity[0], kTexWidth, kTexHeight, vData);
+	CreateTexture2D(&kTexturePosition[0], kTexWidth, kTexHeight, pData);
+	CreateTexture2D(&kTextureVelocity[0], kTexWidth, kTexHeight, vData);
 
 	glGenFramebuffers(2, kFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, kFBO[0]);
@@ -383,8 +414,8 @@ void GenerateParticles(void)
 		pData[i] = 0.0f;
 		vData[i] = 0.0f;
 	}
-	CreateTexture(&kTexturePosition[1], kTexWidth, kTexHeight, pData);
-	CreateTexture(&kTextureVelocity[1], kTexWidth, kTexHeight, vData);
+	CreateTexture2D(&kTexturePosition[1], kTexWidth, kTexHeight, pData);
+	CreateTexture2D(&kTextureVelocity[1], kTexWidth, kTexHeight, vData);
 
 	glBindFramebuffer(GL_FRAMEBUFFER, kFBO[1]);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
@@ -400,12 +431,10 @@ void GenerateParticles(void)
 	for (size_t x = 0; x < kTexWidth; ++x) {
 		for (size_t y = 0; y < kTexHeight; ++y) {
 			size_t i = (y * kTexWidth + x) * 6;
-			attributeData[i + 0] = 1.0f * (x + 0.5f) / kTexWidth; // s
-			attributeData[i + 1] = 1.0f * (y + 0.5f) / kTexHeight; // t
+			attributeData[i + 0] = attributeData[i + 3] = 1.0f * (x + 0.5f) / kTexWidth; // s
+			attributeData[i + 1] = attributeData[i + 4] = 1.0f * (y + 0.5f) / kTexHeight; // t
 			attributeData[i + 2] = 1.0f; // head of line
 			attributeData[i + 5] = 0.0f; // not head of line
-			attributeData[i + 3] = 1.0f * (x + 0.5f) / kTexWidth; // s
-			attributeData[i + 4] = 1.0f * (y + 0.5f) / kTexHeight; // t
 		}
 	}
 
@@ -415,43 +444,6 @@ void GenerateParticles(void)
 		attributeData, GL_STATIC_DRAW);
 	delete[] attributeData;
 
-	// Create noise
-	GLbyte *permData = new GLbyte[kTexWidth * kTexHeight * 4];
-	for (int x = 0; x < 256; ++x) {
-		for (int y = 0; y < 256; ++y) {
-			int i = (x * 256 + y) * 4;
-			char value = perm[(y + perm[x]) & 0xFF];
-			permData[i + 0] = grad3[value & 0x0F][0] * 64 + 64;
-			permData[i + 1] = grad3[value & 0x0F][1] * 64 + 64;
-			permData[i + 2] = grad3[value & 0x0F][2] * 64 + 64;
-			permData[i + 3] = value;
-		}
-	}
-
-	glGenTextures(1, &kPermTexture);
-	glBindTexture(GL_TEXTURE_2D, kPermTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kTexWidth, kTexHeight, 0, GL_RGBA, 
-		GL_UNSIGNED_BYTE, permData);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	delete[] permData;
-
-	GLbyte *noiseData = new GLbyte[kTexWidth * kTexHeight * 4];
-	for (int i = 0; i < kTexWidth * kTexHeight * 4; ++i) {
-		noiseData[i] = 0;
-	}
-	glGenTextures(1, &kNoiseTexture);
-	glBindTexture(GL_TEXTURE_2D, kNoiseTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, kTexWidth, kTexHeight, 0, GL_RGBA,
-		GL_UNSIGNED_BYTE, noiseData);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	delete[] noiseData;
-
-	glBindFramebuffer(GL_FRAMEBUFFER, kNoiseFBO);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-		GL_TEXTURE_2D, kNoiseTexture, 0);
-
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -459,11 +451,13 @@ void GenerateParticles(void)
 void Cleanup(void)
 {
 	glDeleteBuffers(1, &kAttributeBuffer);
+
 	glDeleteFramebuffers(2, kFBO);
 	glDeleteTextures(2, kTexturePosition);
 	glDeleteTextures(2, kTextureVelocity);
-	glDeleteTextures(1, &kPermTexture);
-	glDeleteTextures(1, &kNoiseTexture);
+
+	glDeleteFramebuffers(1, &kNoiseFBO);
+	glDeleteTextures(1, &kTextureCurlNoise);
 }
 
 int main(int argc, char **argv) 
@@ -475,13 +469,14 @@ int main(int argc, char **argv)
 	glutInitWindowPosition(100, 100);
 	glutInitWindowSize(1280, 720);
 	kMainWindow = glutCreateWindow("GPU Particles");
+	//glutFullScreen();
 	glewInit();
 
-	std::cout << "OpenGL Version: " << glGetString(GL_VERSION) << std::endl;
+	cout << "OpenGL Version: " << glGetString(GL_VERSION) << endl;
 
 	Init();
-	GenerateNoise();
 	GenerateParticles();
+	GenerateNoise();
 
 	glutMainLoop();
 
