@@ -1,3 +1,10 @@
 Gpu\ Particles.opensdf
-Release/*
-Debug/*
+Gpu\ Particles.sln
+Gpu\ Particles.sdf
+Gpu\ Particles.v11.suo
+Gpu\ Particles.v12.suo
+Gpu\ Particles/Gpu\ Particles*
+Gpu\ Particles/Debug
+Gpu\ Particles/Release
+Release
+Debug
