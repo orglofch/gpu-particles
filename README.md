@@ -1,7 +1,7 @@
 GPU-Particles
 ============
 
-A particle engine which can simulate 1,000,000+ particles on the GPU.
+A GPU accelerated particle engine which can simulate 1,000,000+ particles.
 
 Language: C++
 
