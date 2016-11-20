@@ -1,22 +1,34 @@
-attribute vec2 aIndex;
-attribute float linehead;
+// Vertex shader for rendering particles.
 
-uniform sampler2D uPositions;
-uniform sampler2D uVelocities;
+attribute vec2 index;
+//attribute float linehead;
 
-varying float vLife;
+uniform sampler2D positions;
+uniform sampler2D velocities;
+
+uniform mat4 lightMVP;
+uniform mat4 lightBias;
+
+varying float life;
+varying vec3 FragmentPosition;
+varying vec3 EyeVector;
+varying vec3 ShadowCoord;
 
 void main()
 {
-	vec4 position = texture2D(uPositions, aIndex);
-	vLife = position.w;
+	vec4 position = texture2D(positions, index);
+	FragmentPosition = position.xyz;
+	life = position.w;
 
-	gl_Position = vec4(position.xyz, 1.0);
-	vec3 velocity = texture2D(uVelocities, aIndex).xyz;
-	if (linehead < 0.5) {
-		gl_Position += vec4(velocity * 0.3, 0.0);
-	}
-	gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * gl_Position;
+	ShadowCoord = (lightBias * lightMVP) * vec4(FragmentPosition, 1);
+	EyeVector = normalize(gl_ModelViewMatrix * vec4(0, 0, 0, 1) - gl_ModelViewMatrix * vec4(FragmentPosition, 1));
 
-	gl_TexCoord[0].st = aIndex;
+	gl_Position = vec4(FragmentPosition, 1.0);
+	//vec3 velocity = texture2D(velocities, index).xyz;
+	//if (linehead < 0.5) {
+	//	gl_Position += vec4(velocity * 0.3, 0.0);
+	//}
+	gl_Position = gl_ModelViewProjectionMatrix * gl_Position;
+
+	gl_TexCoord[0].st = index;
 }

@@ -1,0 +1,3 @@
+[submodule "Gpu Particles/Utility"]
+	path = Gpu Particles/Utility
+	url = https://github.com/orglofch/Utility.git

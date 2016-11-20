@@ -1,13 +1,4 @@
-//
-// Description : Array and textureless GLSL 2D/3D/4D simplex 
-//               noise functions.
-//      Author : Ian McEwan, Ashima Arts.
-//  Maintainer : ijm
-//     Lastmod : 20110822 (ijm)
-//     License : Copyright (C) 2011 Ashima Arts. All rights reserved.
-//               Distributed under the MIT License. See LICENSE file.
-//               https://github.com/ashima/webgl-noise
-// 
+// Fragment shader for updating particle positions, velocities and lifetimes.
 
 float rand(vec2 co) {
     return fract(sin(dot(co.xy ,vec2(12.9898,78.233))) * 43758.5453);
@@ -161,68 +152,68 @@ vec4 curl(vec4 p)
   return vec4(normalize(vec3(x, y, z) * divisor), 1.0);
 }
 
-uniform sampler2D uPositions;
-uniform sampler2D uVelocities;
-uniform sampler2D uCurlNoise;
-uniform vec2 uMousePosition;
-uniform float uMouseDown;
+vec3 perturbance(sampler2D noise, vec4 pos, vec2 id) 
+{
+  return mix(mix(mix(texture2D(noise, id).xyz, texture2D(noise, pos.xy).xyz, 0.5), texture2D(noise, pos.yz), 0.05), texture2D(noise, pos.xz), 0.5) / 10000.0;
+}
 
-uniform float uTime;
+uniform sampler2D positions;
+uniform sampler2D velocities;
+uniform sampler2D normals;
 
-uniform float uMode;
+uniform vec2 mouse_position;
+uniform float mouse_down;
 
-int MODE_NORMAL = 0;
-int MODE_FIRE = 1;
+uniform float curl_noise;
+uniform float curl_perturbance;
+
+uniform float lift;
+uniform float drag;
+uniform float decay;
+
+uniform float time;
 
 float PI = 3.1415926535897932384626433832795;
 
 void main()
 {
-	int mode = int(uMode);
+	vec4 position = texture2D(positions, gl_TexCoord[0].st);
+	vec3 velocity = texture2D(velocities, gl_TexCoord[0].st).xyz;
+	vec3 normal = texture2D(normals, gl_TexCoord[0].st).xyz;
 
-	vec4 position = texture2D(uPositions, gl_TexCoord[0].st);
-	
-	vec3 velocity = texture2D(uVelocities, gl_TexCoord[0].st).xyz;
-	if (uMouseDown > 0.5) {
-		vec3 vecToMouse = position.xyz - vec3(uMousePosition, 0.0);
+	if (mouse_down > 0.5) {
+		vec3 vecToMouse = position.xyz - vec3(mouse_position, 0.0);
 		float vecToMouseDistance = length(vecToMouse);
 		vec3 normVecToMouse = normalize(vecToMouse);
 		velocity -= normVecToMouse * min(0.001, 1.0 / (vecToMouseDistance * vecToMouseDistance * vecToMouseDistance) / 1000);
 	} 
 
-	// Noise
-	if (mode == MODE_FIRE) {
-		velocity += curl(vec4(position.xyz * 5.5, uTime)).xyz / 1000;
-	
-		// Lift
-		velocity += vec3(0.0, 0.0001, 0.0);
+	if (curl_noise > 0.5) {
+		velocity += curl(vec4(position.xyz * 3, time)).xyz / 1000;
 	}
 
-	// Drag
-	velocity *= 0.98;
+	velocity += vec3(0.0, lift, 0.0);
+	velocity *= drag;
 
-	// Decrease life
-	if (mode == MODE_FIRE) {
-		position.w -= 0.005;
+	position.w -= decay;
+	// Reset if 0 life
+	if (position.w < 0) {
+		position.w = rand(position.xy);
+		position.x = mouse_position.x + rand(position.xy) / 50;
+		position.y = mouse_position.y + rand(position.yz) / 50;
+		position.z = 0.0;
 
-		// Reset if 0 life
-		if (position.w < 0) {
-			position.w = rand(position.xy);
-			position.x = uMousePosition.x + rand(position.xy) / 50;
-			position.y = uMousePosition.y + rand(position.yz) / 50;
-			position.z = 0.0;
+		float theta = rand(vec2(position.x, time)) * 2.0 * PI;
 
-			float theta = rand(vec2(position.x, uTime)) * 2.0 * PI;
-
-			float z = rand(vec2(position.y, uTime)) * 2.0 - 1.0;
-			float radius = 0.002;
-			velocity.x = radius * sqrt(1 - pow(z, 2)) * cos(theta);
-			velocity.y = radius * sqrt(1 - pow(z, 2)) * sin(theta);
-			velocity.z = radius * z;
-		}
+		float z = rand(vec2(position.y, time)) * 2.0 - 1.0;
+		float radius = 0.002;
+		velocity.x = radius * sqrt(1 - pow(z, 2)) * cos(theta);
+		velocity.y = radius * sqrt(1 - pow(z, 2)) * sin(theta);
+		velocity.z = radius * z;
 	}
 
 	// Update textures
 	gl_FragData[0] = position + vec4(velocity, 0.0);
 	gl_FragData[1] = vec4(velocity, 0.0);
+	gl_FragData[2] = vec4(normal, 0.0);
 }
