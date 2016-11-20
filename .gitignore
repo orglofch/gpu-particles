@@ -1,10 +1,12 @@
-Gpu\ Particles.opensdf
-Gpu\ Particles.sln
-Gpu\ Particles.sdf
-Gpu\ Particles.v11.suo
-Gpu\ Particles.v12.suo
-Gpu\ Particles/Gpu\ Particles*
-Gpu\ Particles/Debug
-Gpu\ Particles/Release
+*.opensdf
+*.sln
+*.sdf
+*.suo
+*Debug*
+*Release*
+*.vcxproj
+*.filters
+*.user
+*.resx
 Release
 Debug
